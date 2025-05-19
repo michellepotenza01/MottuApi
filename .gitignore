@@ -1,0 +1,12 @@
+﻿# Ignorar arquivos de configuração do Visual Studio
+.vs/
+*.user
+*.suo
+*.vscode/
+
+# Ignorar arquivos de build
+bin/
+obj/
+
+# Ignorar arquivos temporários de edição
+*.log
