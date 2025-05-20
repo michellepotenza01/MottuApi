@@ -2,6 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
 using MottuApi.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MottuApi.Controllers
 {
@@ -16,7 +18,7 @@ namespace MottuApi.Controllers
             _context = context;
         }
 
-        // GET: api/patio
+        // GET: api/patios
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Patio>>> GetPatios([FromQuery] string nomePatio = null)
         {
@@ -28,23 +30,25 @@ namespace MottuApi.Controllers
             return await patios.ToListAsync();
         }
 
-        // GET: api/patio/{nomePatio}
+        // GET: api/patios/{nomePatio}
         [HttpGet("{nomePatio}")]
         public async Task<ActionResult<Patio>> GetPatio(string nomePatio)
         {
-            var patio = await _context.Patios
-                .FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
+            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
 
             if (patio == null)
                 return NotFound("Pátio não encontrado.");
 
-            return patio;
+            return Ok(patio);
         }
 
-        // POST: api/patio
+        // POST: api/patios
         [HttpPost]
         public async Task<ActionResult<Patio>> PostPatio(PatioDTO patioDTO)
         {
+            if (patioDTO.VagasOcupadas > patioDTO.VagasTotais)
+                return BadRequest("O número de vagas ocupadas não pode ser maior que o número total de vagas.");
+
             var patio = new Patio
             {
                 NomePatio = patioDTO.NomePatio,
@@ -59,15 +63,14 @@ namespace MottuApi.Controllers
             return CreatedAtAction(nameof(GetPatio), new { nomePatio = patio.NomePatio }, patio);
         }
 
-        // PUT: api/patio/{nomePatio}
+        // PUT: api/patios/{nomePatio}
         [HttpPut("{nomePatio}")]
         public async Task<IActionResult> PutPatio(string nomePatio, PatioDTO patioDTO)
         {
             if (nomePatio != patioDTO.NomePatio)
-                return BadRequest("Nome do pátio não corresponde ao parâmetro.");
+                return BadRequest("O nome do pátio não corresponde ao parâmetro.");
 
-            var patioExistente = await _context.Patios
-                .FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
+            var patioExistente = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
 
             if (patioExistente == null)
                 return NotFound("Pátio não encontrado.");
@@ -76,9 +79,8 @@ namespace MottuApi.Controllers
             patioExistente.VagasTotais = patioDTO.VagasTotais;
 
             if (patioDTO.VagasOcupadas > patioExistente.VagasTotais)
-            {
-                return BadRequest("O número de vagas ocupadas não pode ser maior que o número de vagas totais.");
-            }
+                return BadRequest("O número de vagas ocupadas não pode ser maior que o número total de vagas.");
+
             patioExistente.VagasOcupadas = patioDTO.VagasOcupadas;
 
             await _context.SaveChangesAsync();
@@ -86,13 +88,11 @@ namespace MottuApi.Controllers
             return Ok("Pátio atualizado com sucesso.");
         }
 
-
-        // DELETE: api/patio/{nomePatio}
+        // DELETE: api/patios/{nomePatio}
         [HttpDelete("{nomePatio}")]
         public async Task<IActionResult> DeletePatio(string nomePatio)
         {
-            var patio = await _context.Patios
-                .FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
+            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
 
             if (patio == null)
                 return NotFound("Pátio não encontrado.");
@@ -104,4 +104,3 @@ namespace MottuApi.Controllers
         }
     }
 }
-

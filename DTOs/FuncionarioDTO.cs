@@ -4,15 +4,16 @@ namespace MottuApi.Models
 {
     public class FuncionarioDTO
     {
-        [Required(ErrorMessage = "O usuário é obrigatório. Informe o nome de usuário único para o funcionário.")]
-        public string UsuarioFuncionario { get; set; }  // UsuarioFuncionario chave primária
+        [Required(ErrorMessage = "O usuário é obrigatório.")]
+        public string UsuarioFuncionario { get; set; }
 
-        [Required(ErrorMessage = "O nome do funcionário é obrigatório. Informe o nome completo do funcionário.")]
+        [Required(ErrorMessage = "O nome do funcionário é obrigatório.")]
         public string Nome { get; set; }
 
-        [Required(ErrorMessage = "A senha é obrigatória. Informe a senha segura do funcionário.")]
+        [Required(ErrorMessage = "A senha é obrigatória.")]
         public string Senha { get; set; }
 
-        [Required(ErrorMessage = "O nome do pátio de trabalho é obrigatório. Informe o nome do pátio onde o funcionário trabalha.")]
-        public string NomePatio { get; set; }  
+        [Required(ErrorMessage = "O nome do pátio de trabalho é obrigatório.")]
+        public string NomePatio { get; set; }  // O pátio será associado automaticamente no cadastro
+    }
 }

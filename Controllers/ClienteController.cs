@@ -2,8 +2,8 @@
 using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
 using MottuApi.Models;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace MottuApi.Controllers
 {
@@ -18,57 +18,54 @@ namespace MottuApi.Controllers
             _context = context;
         }
 
-        // GET: api/cliente
+        // GET: api/clientes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
         {
-            return await _context.Clientes.ToListAsync();
+            var clientes = await _context.Clientes.ToListAsync();
+            if (clientes == null)
+                return NotFound("Nenhum cliente encontrado.");
+            return Ok(clientes);
         }
 
-        // GET: api/cliente/{usuarioCliente}
+        // GET: api/clientes/{usuarioCliente}
         [HttpGet("{usuarioCliente}")]
         public async Task<ActionResult<Cliente>> GetCliente(string usuarioCliente)
         {
-            var cliente = await _context.Clientes
-                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (cliente == null)
                 return NotFound("Cliente não encontrado.");
 
-            return cliente;
+            return Ok(cliente);
         }
 
-        // POST: api/cliente
+        // POST: api/clientes
         [HttpPost]
         public async Task<ActionResult<Cliente>> PostCliente(ClienteDTO clienteDTO)
         {
-            if (ModelState.IsValid)
+            var cliente = new Cliente
             {
-                var cliente = new Cliente
-                {
-                    UsuarioCliente = clienteDTO.UsuarioCliente,
-                    Nome = clienteDTO.Nome,
-                    Senha = clienteDTO.Senha,
-                };
+                UsuarioCliente = clienteDTO.UsuarioCliente,
+                Nome = clienteDTO.Nome,
+                Senha = clienteDTO.Senha,
+                MotoPlaca = clienteDTO.MotoPlaca
+            };
 
-                _context.Clientes.Add(cliente);
-                await _context.SaveChangesAsync();
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetCliente), new { usuarioCliente = cliente.UsuarioCliente }, cliente);
-            }
-
-            return BadRequest("Dados inválidos. Verifique as informações fornecidas.");
+            return CreatedAtAction(nameof(GetCliente), new { usuarioCliente = cliente.UsuarioCliente }, cliente);
         }
 
-        // PUT: api/cliente/{usuarioCliente}
+        // PUT: api/clientes/{usuarioCliente}
         [HttpPut("{usuarioCliente}")]
         public async Task<IActionResult> PutCliente(string usuarioCliente, ClienteDTO clienteDTO)
         {
             if (usuarioCliente != clienteDTO.UsuarioCliente)
                 return BadRequest("O usuário do cliente não corresponde ao parâmetro.");
 
-            var clienteExistente = await _context.Clientes
-                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var clienteExistente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (clienteExistente == null)
                 return NotFound("Cliente não encontrado.");
@@ -81,12 +78,11 @@ namespace MottuApi.Controllers
             return Ok("Cliente atualizado com sucesso.");
         }
 
-        // DELETE: api/cliente/{usuarioCliente}
+        // DELETE: api/clientes/{usuarioCliente}
         [HttpDelete("{usuarioCliente}")]
         public async Task<IActionResult> DeleteCliente(string usuarioCliente)
         {
-            var cliente = await _context.Clientes
-                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (cliente == null)
                 return NotFound("Cliente não encontrado.");

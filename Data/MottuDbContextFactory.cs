@@ -18,7 +18,7 @@ namespace MottuApi.Data
 
             var connectionString = configuration.GetConnectionString("OracleConnection");
 
-            // conexão com o Oracle
+            // Configuração da conexão com o Oracle
             optionsBuilder.UseOracle(connectionString);
 
             return new MottuDbContext(optionsBuilder.Options);

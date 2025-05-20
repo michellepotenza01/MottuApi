@@ -11,7 +11,7 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace MottuApi.net.Migrations
 {
     [DbContext(typeof(MottuDbContext))]
-    [Migration("20250514232806_InitialCreate")]
+    [Migration("20250520051304_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -30,7 +30,6 @@ namespace MottuApi.net.Migrations
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("MotoPlaca")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(7)");
 
                     b.Property<string>("Nome")
@@ -57,11 +56,11 @@ namespace MottuApi.net.Migrations
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(2000)");
 
-                    b.Property<int>("PatioId")
-                        .HasColumnType("NUMBER(10)");
+                    b.Property<string>("NomePatio")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("PatioNomePatio")
-                        .IsRequired()
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Senha")
@@ -81,21 +80,10 @@ namespace MottuApi.net.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("NVARCHAR2(7)");
 
-                    b.Property<string>("FuncionarioUsuarioFuncionario")
-                        .HasColumnType("NVARCHAR2(450)");
-
-                    b.Property<string>("Marca")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)");
-
-                    b.Property<string>("Modelo")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)");
-
-                    b.Property<int>("PatioId")
+                    b.Property<int>("Modelo")
                         .HasColumnType("NUMBER(10)");
 
-                    b.Property<string>("PatioNomePatio")
+                    b.Property<string>("NomePatio")
                         .IsRequired()
                         .HasColumnType("NVARCHAR2(450)");
 
@@ -107,13 +95,13 @@ namespace MottuApi.net.Migrations
 
                     b.Property<string>("UsuarioFuncionario")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)");
+                        .HasColumnType("NVARCHAR2(450)");
 
                     b.HasKey("Placa");
 
-                    b.HasIndex("FuncionarioUsuarioFuncionario");
+                    b.HasIndex("NomePatio");
 
-                    b.HasIndex("PatioNomePatio");
+                    b.HasIndex("UsuarioFuncionario");
 
                     b.ToTable("Motos");
                 });
@@ -142,9 +130,7 @@ namespace MottuApi.net.Migrations
                 {
                     b.HasOne("MottuApi.Models.Moto", "Moto")
                         .WithMany()
-                        .HasForeignKey("MotoPlaca")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("MotoPlaca");
 
                     b.Navigation("Moto");
                 });
@@ -153,22 +139,22 @@ namespace MottuApi.net.Migrations
                 {
                     b.HasOne("MottuApi.Models.Patio", "Patio")
                         .WithMany()
-                        .HasForeignKey("PatioNomePatio")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("PatioNomePatio");
 
                     b.Navigation("Patio");
                 });
 
             modelBuilder.Entity("MottuApi.Models.Moto", b =>
                 {
-                    b.HasOne("MottuApi.Models.Funcionario", "Funcionario")
-                        .WithMany()
-                        .HasForeignKey("FuncionarioUsuarioFuncionario");
-
                     b.HasOne("MottuApi.Models.Patio", "Patio")
                         .WithMany("Motos")
-                        .HasForeignKey("PatioNomePatio")
+                        .HasForeignKey("NomePatio")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("MottuApi.Models.Funcionario", "Funcionario")
+                        .WithMany()
+                        .HasForeignKey("UsuarioFuncionario")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

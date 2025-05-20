@@ -1,5 +1,6 @@
 ﻿using MottuApi.Data;
 using MottuApi.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,7 +22,8 @@ namespace MottuApi.Services
 
         public async Task<Cliente> GetClienteAsync(string usuarioCliente)
         {
-            return await _context.Clientes.FindAsync(usuarioCliente);
+            return await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
         }
 
         public async Task<string> AddClienteAsync(Cliente cliente)
@@ -33,7 +35,9 @@ namespace MottuApi.Services
 
         public async Task<string> UpdateClienteAsync(string usuarioCliente, Cliente cliente)
         {
-            var clienteExistente = await _context.Clientes.FindAsync(usuarioCliente);
+            var clienteExistente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+
             if (clienteExistente == null)
                 return "Cliente não encontrado.";
 
@@ -46,7 +50,9 @@ namespace MottuApi.Services
 
         public async Task<string> DeleteClienteAsync(string usuarioCliente)
         {
-            var cliente = await _context.Clientes.FindAsync(usuarioCliente);
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+
             if (cliente == null)
                 return "Cliente não encontrado.";
 

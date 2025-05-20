@@ -15,37 +15,38 @@ namespace MottuApi.Services
             _context = context;
         }
 
-        public async Task<IQueryable<Moto>> GetMotosAsync(string status, string setor)
+        public async Task<IQueryable<Moto>> GetMotosAsync(string status = null, string setor = null)
         {
-            var query = _context.Motos.AsQueryable();
+            var motos = _context.Motos.AsQueryable();
 
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<StatusMoto>(status, true, out var statusEnum))
-                query = query.Where(m => m.Status == statusEnum);
+            if (!string.IsNullOrEmpty(status))
+                motos = motos.Where(m => m.Status.ToString() == status);
 
-            if (!string.IsNullOrEmpty(setor) && Enum.TryParse<SetorMoto>(setor, true, out var setorEnum))
-                query = query.Where(m => m.Setor == setorEnum);
+            if (!string.IsNullOrEmpty(setor))
+                motos = motos.Where(m => m.Setor.ToString() == setor);
 
-            return await Task.FromResult(query);
+            return motos;
         }
 
         public async Task<Moto> GetMotoAsync(string placa)
         {
-            return await _context.Motos.FindAsync(placa);
+            return await _context.Motos
+                .FirstOrDefaultAsync(m => m.Placa == placa);
         }
 
         public async Task<string> AddMotoAsync(Moto moto)
         {
-            // Verificar se o UsuarioFuncionario existe no banco 
+            // Verificar se o funcionário existe
             var funcionario = await _context.Funcionarios
                 .FirstOrDefaultAsync(f => f.UsuarioFuncionario == moto.UsuarioFuncionario);
 
             if (funcionario == null)
-            {
-                return "Usuário do funcionário inválido. Certifique-se de que o usuário existe no banco de dados.";
-            }
+                return "Funcionário não encontrado.";
 
-            // Verificar se há vagas disponíveis no pátio
-            var patio = await _context.Patios.FindAsync(moto.NomePatio);
+            // Verificar se o pátio existe
+            var patio = await _context.Patios
+                .FirstOrDefaultAsync(p => p.NomePatio == moto.NomePatio);
+
             if (patio == null)
                 return "Pátio não encontrado.";
 
@@ -53,59 +54,67 @@ namespace MottuApi.Services
                 return "Não há vagas disponíveis no pátio.";
 
             _context.Motos.Add(moto);
-            patio.VagasOcupadas++;  // Se a moto for adicionada, uma vaga será ocupada.
-            await _context.SaveChangesAsync();
 
+            // Se a moto for "disponível" ou "em manutenção", ocupa uma vaga
+            if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
+                patio.VagasOcupadas++;
+
+            await _context.SaveChangesAsync();
             return "Moto criada com sucesso!";
         }
 
-        public async Task<string> UpdateMotoStatusAsync(string placa, StatusMoto novoStatus)
+        public async Task<string> UpdateMotoAsync(string placa, Moto moto)
         {
-            var moto = await _context.Motos.FindAsync(placa);
-            if (moto == null)
+            var motoExistente = await _context.Motos
+                .Include(m => m.Patio)
+                .FirstOrDefaultAsync(m => m.Placa == placa);
+
+            if (motoExistente == null)
                 return "Moto não encontrada.";
 
-            var patio = await _context.Patios.FindAsync(moto.NomePatio);
-            if (patio == null)
-                return "Pátio não encontrado.";
+            var patio = motoExistente.Patio;
 
-            // Lógica para gerenciar as vagas do pátio ao alterar o status da moto
-            if (moto.Status != novoStatus)  // Verifica se o status mudou
+            if (moto.Status != motoExistente.Status)
             {
-                // Se a moto mudar de "Alugada" para "Disponível" -> liberar uma vaga
-                if (moto.Status == StatusMoto.Alugada && novoStatus == StatusMoto.Disponível)
+                // Libera ou ocupa vaga dependendo do status
+                if (moto.Status == StatusMoto.Alugada)
                 {
-                    patio.VagasOcupadas--;
+                    if (motoExistente.Status == StatusMoto.Disponível)
+                        patio.VagasOcupadas--;
                 }
-                // Se a moto mudar de "Disponível" para "Alugada" -> ocupar uma vaga
-                else if (moto.Status == StatusMoto.Disponível && novoStatus == StatusMoto.Alugada)
+                else if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
                 {
-                    patio.VagasOcupadas++;
+                    if (motoExistente.Status == StatusMoto.Alugada)
+                        patio.VagasOcupadas++;
                 }
             }
 
-            moto.Status = novoStatus;
+            motoExistente.Modelo = moto.Modelo;
+            motoExistente.Status = moto.Status;
+            motoExistente.Setor = moto.Setor;
+
             await _context.SaveChangesAsync();
-            return "Status da moto alterado com sucesso!";
+            return "Moto atualizada com sucesso!";
         }
 
         public async Task<string> DeleteMotoAsync(string placa)
         {
-            var moto = await _context.Motos.FindAsync(placa);
+            var moto = await _context.Motos
+                .Include(m => m.Patio)
+                .FirstOrDefaultAsync(m => m.Placa == placa);
+
             if (moto == null)
                 return "Moto não encontrada.";
 
-            var patio = await _context.Patios.FindAsync(moto.NomePatio);
-            if (patio != null)
-            {
-                patio.VagasOcupadas--;  // Libera uma vaga no pátio ao excluir a moto
-                await _context.SaveChangesAsync();
-            }
+            var patio = moto.Patio;
+
+            if (patio != null && (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção))
+                patio.VagasOcupadas--;
 
             _context.Motos.Remove(moto);
             await _context.SaveChangesAsync();
 
-            return "Moto excluída com sucesso!";
+            return "Moto removida com sucesso!";
         }
     }
 }
