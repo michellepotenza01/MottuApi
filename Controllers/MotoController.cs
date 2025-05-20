@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
 using MottuApi.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MottuApi.Controllers
@@ -76,7 +77,7 @@ namespace MottuApi.Controllers
                 NomePatio = motoDTO.NomePatio,
                 UsuarioFuncionario = motoDTO.UsuarioFuncionario,
                 Funcionario = funcionario,
-                Patio = patio  
+                Patio = patio
             };
 
             if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)

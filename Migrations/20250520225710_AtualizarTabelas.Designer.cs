@@ -11,8 +11,8 @@ using Oracle.EntityFrameworkCore.Metadata;
 namespace MottuApi.net.Migrations
 {
     [DbContext(typeof(MottuDbContext))]
-    [Migration("20250520051304_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250520225710_AtualizarTabelas")]
+    partial class AtualizarTabelas
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,22 +27,23 @@ namespace MottuApi.net.Migrations
             modelBuilder.Entity("MottuApi.Models.Cliente", b =>
                 {
                     b.Property<string>("UsuarioCliente")
+                        .HasMaxLength(450)
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("MotoPlaca")
-                        .HasColumnType("NVARCHAR2(7)");
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("Senha")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("NVARCHAR2(2000)");
 
                     b.HasKey("UsuarioCliente");
-
-                    b.HasIndex("MotoPlaca");
 
                     b.ToTable("Clientes");
                 });
@@ -50,26 +51,26 @@ namespace MottuApi.net.Migrations
             modelBuilder.Entity("MottuApi.Models.Funcionario", b =>
                 {
                     b.Property<string>("UsuarioFuncionario")
+                        .HasMaxLength(450)
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Nome")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<string>("NomePatio")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(2000)");
-
-                    b.Property<string>("PatioNomePatio")
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Senha")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("NVARCHAR2(2000)");
 
                     b.HasKey("UsuarioFuncionario");
 
-                    b.HasIndex("PatioNomePatio");
+                    b.HasIndex("NomePatio");
 
                     b.ToTable("Funcionarios");
                 });
@@ -85,7 +86,8 @@ namespace MottuApi.net.Migrations
 
                     b.Property<string>("NomePatio")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(450)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<int>("Setor")
                         .HasColumnType("NUMBER(10)");
@@ -95,7 +97,8 @@ namespace MottuApi.net.Migrations
 
                     b.Property<string>("UsuarioFuncionario")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR2(450)");
+                        .HasMaxLength(2000)
+                        .HasColumnType("NVARCHAR2(2000)");
 
                     b.HasKey("Placa");
 
@@ -109,10 +112,12 @@ namespace MottuApi.net.Migrations
             modelBuilder.Entity("MottuApi.Models.Patio", b =>
                 {
                     b.Property<string>("NomePatio")
+                        .HasMaxLength(450)
                         .HasColumnType("NVARCHAR2(450)");
 
                     b.Property<string>("Localizacao")
                         .IsRequired()
+                        .HasMaxLength(2000)
                         .HasColumnType("NVARCHAR2(2000)");
 
                     b.Property<int>("VagasOcupadas")
@@ -126,20 +131,13 @@ namespace MottuApi.net.Migrations
                     b.ToTable("Patios");
                 });
 
-            modelBuilder.Entity("MottuApi.Models.Cliente", b =>
-                {
-                    b.HasOne("MottuApi.Models.Moto", "Moto")
-                        .WithMany()
-                        .HasForeignKey("MotoPlaca");
-
-                    b.Navigation("Moto");
-                });
-
             modelBuilder.Entity("MottuApi.Models.Funcionario", b =>
                 {
                     b.HasOne("MottuApi.Models.Patio", "Patio")
                         .WithMany()
-                        .HasForeignKey("PatioNomePatio");
+                        .HasForeignKey("NomePatio")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Patio");
                 });

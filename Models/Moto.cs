@@ -5,8 +5,8 @@ namespace MottuApi.Models
     public class Moto
     {
         [Key]
-        [Required(ErrorMessage = "A placa é obrigatória. Informe a placa da moto, que deve ter 7 caracteres.")]
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "A placa deve ter 7 caracteres.")]
+        [Required(ErrorMessage = "A placa é obrigatória.")]
+        [StringLength(7)]  // Ajuste para garantir que o campo tenha o mesmo comprimento no banco
         public string Placa { get; set; }  // Chave primária
 
         [Required(ErrorMessage = "O modelo da moto é obrigatório.")]
@@ -22,10 +22,12 @@ namespace MottuApi.Models
         public SetorMoto Setor { get; set; }
 
         [Required(ErrorMessage = "O nome do pátio é obrigatório.")]
-        public string NomePatio { get; set; }  // Chave de relacionamento com Patio
+        [StringLength(2000)]  // Ajuste para garantir que a chave de relacionamento tenha o mesmo comprimento no banco
+        public string NomePatio { get; set; }
 
         [Required(ErrorMessage = "O usuário do funcionário é obrigatório.")]
-        public string UsuarioFuncionario { get; set; }  // Relacionamento com o funcionário
+        [StringLength(2000)]  // Ajuste para garantir que o campo tenha o mesmo comprimento no banco
+        public string UsuarioFuncionario { get; set; }
 
         public Funcionario Funcionario { get; set; }  // Relacionamento com o funcionário
         public Patio Patio { get; set; }  // Relacionamento com o pátio

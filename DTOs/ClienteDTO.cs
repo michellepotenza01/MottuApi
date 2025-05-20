@@ -5,18 +5,19 @@ namespace MottuApi.Models
     public class ClienteDTO
     {
         [Required(ErrorMessage = "O usuário do cliente é obrigatório. Informe o nome de usuário único para o cliente.")]
+        [StringLength(450)]  // Garantir que a chave de relacionamento tenha o mesmo comprimento no banco
         public string UsuarioCliente { get; set; }
 
         [Required(ErrorMessage = "O nome do cliente é obrigatório.")]
+        [StringLength(2000)]  // Garantir que o nome tenha o mesmo comprimento no banco
         public string Nome { get; set; }
 
         [Required(ErrorMessage = "A senha do cliente é obrigatória.")]
+        [StringLength(2000)]  // Garantir que a senha tenha o mesmo comprimento no banco
         public string Senha { get; set; }
 
-        // Se o cliente tem uma moto, a placa da moto seria informada, mas pode ser nula
-        public string? MotoPlaca { get; set; }  // A moto do cliente pode ser opcional, então é anulável
+        public string? MotoPlaca { get; set; }  // Moto do cliente, agora pode ser nula
 
-        // Construtor
         public ClienteDTO()
         {
             UsuarioCliente = string.Empty;

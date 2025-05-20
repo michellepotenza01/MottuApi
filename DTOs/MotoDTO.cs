@@ -5,7 +5,7 @@ namespace MottuApi.Models
     public class MotoDTO
     {
         [Required(ErrorMessage = "A placa é obrigatória.")]
-        [StringLength(7, MinimumLength = 7, ErrorMessage = "A placa deve ter 7 caracteres.")]
+        [StringLength(7)]  // Garantir que a placa tenha 7 caracteres
         public string Placa { get; set; }
 
         [Required(ErrorMessage = "O modelo da moto é obrigatório.")]
@@ -21,9 +21,11 @@ namespace MottuApi.Models
         public SetorMoto Setor { get; set; }
 
         [Required(ErrorMessage = "O nome do pátio é obrigatório.")]
+        [StringLength(2000)]  // Garantir que o nome do pátio tenha o mesmo comprimento no banco
         public string NomePatio { get; set; }
 
         [Required(ErrorMessage = "O usuário do funcionário é obrigatório.")]
+        [StringLength(2000)]  // Garantir que o nome do funcionário tenha o mesmo comprimento no banco
         public string UsuarioFuncionario { get; set; }
     }
 }

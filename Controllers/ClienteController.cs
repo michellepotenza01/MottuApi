@@ -23,7 +23,7 @@ namespace MottuApi.Controllers
         public async Task<ActionResult<IEnumerable<Cliente>>> GetClientes()
         {
             var clientes = await _context.Clientes.ToListAsync();
-            if (clientes == null)
+            if (clientes == null || clientes.Count == 0)
                 return NotFound("Nenhum cliente encontrado.");
             return Ok(clientes);
         }
@@ -32,7 +32,8 @@ namespace MottuApi.Controllers
         [HttpGet("{usuarioCliente}")]
         public async Task<ActionResult<Cliente>> GetCliente(string usuarioCliente)
         {
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (cliente == null)
                 return NotFound("Cliente não encontrado.");
@@ -65,7 +66,8 @@ namespace MottuApi.Controllers
             if (usuarioCliente != clienteDTO.UsuarioCliente)
                 return BadRequest("O usuário do cliente não corresponde ao parâmetro.");
 
-            var clienteExistente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var clienteExistente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (clienteExistente == null)
                 return NotFound("Cliente não encontrado.");
@@ -82,7 +84,8 @@ namespace MottuApi.Controllers
         [HttpDelete("{usuarioCliente}")]
         public async Task<IActionResult> DeleteCliente(string usuarioCliente)
         {
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
+            var cliente = await _context.Clientes
+                .FirstOrDefaultAsync(c => c.UsuarioCliente == usuarioCliente);
 
             if (cliente == null)
                 return NotFound("Cliente não encontrado.");

@@ -5,17 +5,31 @@
 namespace MottuApi.net.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class AtualizarTabelas : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Clientes",
+                columns: table => new
+                {
+                    UsuarioCliente = table.Column<string>(type: "NVARCHAR2(450)", maxLength: 450, nullable: false),
+                    Nome = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
+                    Senha = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
+                    MotoPlaca = table.Column<string>(type: "NVARCHAR2(2000)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Clientes", x => x.UsuarioCliente);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Patios",
                 columns: table => new
                 {
-                    NomePatio = table.Column<string>(type: "NVARCHAR2(450)", nullable: false),
-                    Localizacao = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
+                    NomePatio = table.Column<string>(type: "NVARCHAR2(450)", maxLength: 450, nullable: false),
+                    Localizacao = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
                     VagasTotais = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     VagasOcupadas = table.Column<int>(type: "NUMBER(10)", nullable: false)
                 },
@@ -28,20 +42,20 @@ namespace MottuApi.net.Migrations
                 name: "Funcionarios",
                 columns: table => new
                 {
-                    UsuarioFuncionario = table.Column<string>(type: "NVARCHAR2(450)", nullable: false),
-                    Nome = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    Senha = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    NomePatio = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    PatioNomePatio = table.Column<string>(type: "NVARCHAR2(450)", nullable: true)
+                    UsuarioFuncionario = table.Column<string>(type: "NVARCHAR2(450)", maxLength: 450, nullable: false),
+                    Nome = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
+                    Senha = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
+                    NomePatio = table.Column<string>(type: "NVARCHAR2(450)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Funcionarios", x => x.UsuarioFuncionario);
                     table.ForeignKey(
-                        name: "FK_Funcionarios_Patios_PatioNomePatio",
-                        column: x => x.PatioNomePatio,
+                        name: "FK_Funcionarios_Patios_NomePatio",
+                        column: x => x.NomePatio,
                         principalTable: "Patios",
-                        principalColumn: "NomePatio");
+                        principalColumn: "NomePatio",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -52,8 +66,8 @@ namespace MottuApi.net.Migrations
                     Modelo = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     Status = table.Column<int>(type: "NUMBER(10)", nullable: false),
                     Setor = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    NomePatio = table.Column<string>(type: "NVARCHAR2(450)", nullable: false),
-                    UsuarioFuncionario = table.Column<string>(type: "NVARCHAR2(450)", nullable: false)
+                    NomePatio = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
+                    UsuarioFuncionario = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -72,34 +86,10 @@ namespace MottuApi.net.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Clientes",
-                columns: table => new
-                {
-                    UsuarioCliente = table.Column<string>(type: "NVARCHAR2(450)", nullable: false),
-                    Nome = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    Senha = table.Column<string>(type: "NVARCHAR2(2000)", nullable: false),
-                    MotoPlaca = table.Column<string>(type: "NVARCHAR2(7)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Clientes", x => x.UsuarioCliente);
-                    table.ForeignKey(
-                        name: "FK_Clientes_Motos_MotoPlaca",
-                        column: x => x.MotoPlaca,
-                        principalTable: "Motos",
-                        principalColumn: "Placa");
-                });
-
             migrationBuilder.CreateIndex(
-                name: "IX_Clientes_MotoPlaca",
-                table: "Clientes",
-                column: "MotoPlaca");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Funcionarios_PatioNomePatio",
+                name: "IX_Funcionarios_NomePatio",
                 table: "Funcionarios",
-                column: "PatioNomePatio");
+                column: "NomePatio");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Motos_NomePatio",

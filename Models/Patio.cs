@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
 
 namespace MottuApi.Models
 {
@@ -7,9 +6,11 @@ namespace MottuApi.Models
     {
         [Key]
         [Required(ErrorMessage = "O nome do pátio é obrigatório.")]
-        public string NomePatio { get; set; }  // Chave primária
+        [StringLength(450)]  // Ajuste para garantir que a chave de relacionamento tenha o mesmo comprimento no banco
+        public string NomePatio { get; set; }
 
         [Required(ErrorMessage = "A localização do pátio é obrigatória.")]
+        [StringLength(2000)]  // Ajuste para garantir que o campo tenha o mesmo comprimento no banco
         public string Localizacao { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "O número de vagas totais deve ser maior que zero.")]
