@@ -21,17 +21,28 @@ namespace MottuApi.Controllers
 
         // GET: api/motos
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Moto>>> GetMotos([FromQuery] string status = null, [FromQuery] string setor = null)
+        public async Task<ActionResult<IEnumerable<Moto>>> GetMotos()
         {
-            var motos = _context.Motos.AsQueryable();
+            var motos = await _context.Motos
+                .Include(m => m.Patio)  // Inclui o pátio
+                .Include(m => m.Funcionario) // Inclui o funcionário
+                .ToListAsync();
 
-            if (!string.IsNullOrEmpty(status))
-                motos = motos.Where(m => m.Status.ToString() == status);
+            if (motos == null || motos.Count == 0)
+                return NotFound("Nenhuma moto encontrada.");
 
-            if (!string.IsNullOrEmpty(setor))
-                motos = motos.Where(m => m.Setor.ToString() == setor);
+            // Simplificar o retorno para incluir apenas as informações necessárias
+            var result = motos.Select(m => new
+            {
+                m.Placa,
+                m.Modelo,
+                m.Status,
+                m.Setor,
+                m.NomePatio,
+                m.UsuarioFuncionario
+            }).ToList();
 
-            return await motos.Include(m => m.Patio).ToListAsync();  // Inclui o pátio
+            return Ok(result);
         }
 
         // GET: api/motos/{placa}
@@ -40,25 +51,48 @@ namespace MottuApi.Controllers
         {
             var moto = await _context.Motos
                 .Include(m => m.Funcionario)
-                .Include(m => m.Patio)  // Inclui o pátio associado
+                .Include(m => m.Patio)
                 .FirstOrDefaultAsync(m => m.Placa == placa);
 
             if (moto == null)
                 return NotFound("Moto não encontrada.");
 
-            return Ok(moto);
+            // Simplificar o retorno para incluir apenas as informações necessárias
+            var result = new
+            {
+                moto.Placa,
+                moto.Modelo,
+                moto.Status,
+                moto.Setor,
+                moto.NomePatio,
+                moto.UsuarioFuncionario
+            };
+
+            return Ok(result);
         }
 
         // POST: api/motos
         [HttpPost]
-        public async Task<ActionResult<Moto>> PostMoto(MotoDTO motoDTO)
+        public async Task<ActionResult<Moto>> PostMoto([FromBody] MotoDTO motoDTO)
         {
+            // Validações de modelo, status e setor
+            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDTO.Modelo))
+                return BadRequest("Modelo inválido. Os modelos válidos são: MottuSport, MottuE, MottuPop.");
+
+            if (!new[] { "Disponível", "Alugada", "Manutenção" }.Contains(motoDTO.Status))
+                return BadRequest("Status inválido. Os valores válidos são: 'Disponível', 'Alugada', ou 'Manutenção'.");
+
+            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDTO.Setor))
+                return BadRequest("Setor inválido. Os valores válidos são: 'Bom', 'Intermediário', ou 'Ruim'.");
+
+            // Verificar se o funcionário existe
             var funcionario = await _context.Funcionarios
                 .FirstOrDefaultAsync(f => f.UsuarioFuncionario == motoDTO.UsuarioFuncionario);
 
             if (funcionario == null)
                 return BadRequest("Funcionário não encontrado.");
 
+            // Verificar se o pátio existe
             var patio = await _context.Patios
                 .FirstOrDefaultAsync(p => p.NomePatio == motoDTO.NomePatio);
 
@@ -80,7 +114,7 @@ namespace MottuApi.Controllers
                 Patio = patio
             };
 
-            if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
+            if (moto.Status == "Disponível" || moto.Status == "Manutenção")
                 patio.VagasOcupadas++;
 
             _context.Motos.Add(moto);
@@ -91,8 +125,18 @@ namespace MottuApi.Controllers
 
         // PUT: api/motos/{placa}
         [HttpPut("{placa}")]
-        public async Task<IActionResult> PutMoto(string placa, MotoDTO motoDTO)
+        public async Task<IActionResult> PutMoto(string placa, [FromBody] MotoDTO motoDTO)
         {
+            // Validações de modelo, status e setor
+            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDTO.Modelo))
+                return BadRequest("Modelo inválido. Os modelos válidos são: MottuSport, MottuE, MottuPop.");
+
+            if (!new[] { "Disponível", "Alugada", "Manutenção" }.Contains(motoDTO.Status))
+                return BadRequest("Status inválido. Os valores válidos são: 'Disponível', 'Alugada', ou 'Manutenção'.");
+
+            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDTO.Setor))
+                return BadRequest("Setor inválido. Os valores válidos são: 'Bom', 'Intermediário', ou 'Ruim'.");
+
             var motoExistente = await _context.Motos
                 .Include(m => m.Patio)
                 .FirstOrDefaultAsync(m => m.Placa == placa);
@@ -100,24 +144,18 @@ namespace MottuApi.Controllers
             if (motoExistente == null)
                 return NotFound("Moto não encontrada.");
 
-            var patio = await _context.Patios
-                .FirstOrDefaultAsync(p => p.NomePatio == motoDTO.NomePatio);
+            var patio = motoExistente.Patio;
 
-            if (patio == null)
-                return NotFound("Pátio não encontrado.");
-
-            // Lógica para atualizar o status
             if (motoDTO.Status != motoExistente.Status)
             {
-                // Libera ou ocupa vaga dependendo do status
-                if (motoDTO.Status == StatusMoto.Alugada)
+                if (motoDTO.Status == "Alugada")
                 {
-                    if (motoExistente.Status == StatusMoto.Disponível)
+                    if (motoExistente.Status == "Disponível")
                         patio.VagasOcupadas--;
                 }
-                else if (motoDTO.Status == StatusMoto.Disponível || motoDTO.Status == StatusMoto.Manutenção)
+                else if (motoDTO.Status == "Disponível" || motoDTO.Status == "Manutenção")
                 {
-                    if (motoExistente.Status == StatusMoto.Alugada)
+                    if (motoExistente.Status == "Alugada")
                         patio.VagasOcupadas++;
                 }
             }
@@ -143,13 +181,9 @@ namespace MottuApi.Controllers
                 return NotFound("Moto não encontrada.");
 
             var patio = moto.Patio;
-            if (patio != null)
+            if (patio != null && (moto.Status == "Disponível" || moto.Status == "Manutenção"))
             {
-                if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
-                {
-                    patio.VagasOcupadas--;  // Libera a vaga se a moto for removida
-                }
-                await _context.SaveChangesAsync();
+                patio.VagasOcupadas--;
             }
 
             _context.Motos.Remove(moto);

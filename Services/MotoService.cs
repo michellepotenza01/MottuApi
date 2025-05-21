@@ -20,10 +20,10 @@ namespace MottuApi.Services
             var motos = _context.Motos.AsQueryable();
 
             if (!string.IsNullOrEmpty(status))
-                motos = motos.Where(m => m.Status.ToString() == status);
+                motos = motos.Where(m => m.Status == status);
 
             if (!string.IsNullOrEmpty(setor))
-                motos = motos.Where(m => m.Setor.ToString() == setor);
+                motos = motos.Where(m => m.Setor == setor);
 
             return motos;
         }
@@ -56,7 +56,7 @@ namespace MottuApi.Services
             _context.Motos.Add(moto);
 
             // Se a moto for "disponível" ou "em manutenção", ocupa uma vaga
-            if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
+            if (moto.Status == "Disponível" || moto.Status == "Manutenção")
                 patio.VagasOcupadas++;
 
             await _context.SaveChangesAsync();
@@ -77,14 +77,14 @@ namespace MottuApi.Services
             if (moto.Status != motoExistente.Status)
             {
                 // Libera ou ocupa vaga dependendo do status
-                if (moto.Status == StatusMoto.Alugada)
+                if (moto.Status == "Alugada")
                 {
-                    if (motoExistente.Status == StatusMoto.Disponível)
+                    if (motoExistente.Status == "Disponível")
                         patio.VagasOcupadas--;
                 }
-                else if (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção)
+                else if (moto.Status == "Disponível" || moto.Status == "Manutenção")
                 {
-                    if (motoExistente.Status == StatusMoto.Alugada)
+                    if (motoExistente.Status == "Alugada")
                         patio.VagasOcupadas++;
                 }
             }
@@ -108,7 +108,7 @@ namespace MottuApi.Services
 
             var patio = moto.Patio;
 
-            if (patio != null && (moto.Status == StatusMoto.Disponível || moto.Status == StatusMoto.Manutenção))
+            if (patio != null && (moto.Status == "Disponível" || moto.Status == "Manutenção"))
                 patio.VagasOcupadas--;
 
             _context.Motos.Remove(moto);

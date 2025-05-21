@@ -5,7 +5,7 @@
 namespace MottuApi.net.Migrations
 {
     /// <inheritdoc />
-    public partial class AtualizarTabelas : Migration
+    public partial class CreateTables : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -63,9 +63,9 @@ namespace MottuApi.net.Migrations
                 columns: table => new
                 {
                     Placa = table.Column<string>(type: "NVARCHAR2(7)", maxLength: 7, nullable: false),
-                    Modelo = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    Status = table.Column<int>(type: "NUMBER(10)", nullable: false),
-                    Setor = table.Column<int>(type: "NUMBER(10)", nullable: false),
+                    Modelo = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
+                    Status = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
+                    Setor = table.Column<string>(type: "NVARCHAR2(100)", maxLength: 100, nullable: false),
                     NomePatio = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false),
                     UsuarioFuncionario = table.Column<string>(type: "NVARCHAR2(2000)", maxLength: 2000, nullable: false)
                 },

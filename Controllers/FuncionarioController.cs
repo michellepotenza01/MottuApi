@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
 using MottuApi.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MottuApi.Controllers
@@ -22,8 +23,27 @@ namespace MottuApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Funcionario>>> GetFuncionarios()
         {
-            var funcionarios = await _context.Funcionarios.Include(f => f.Patio).ToListAsync();
-            return Ok(funcionarios);
+            var funcionarios = await _context.Funcionarios
+                .Include(f => f.Patio)  // Inclui o pátio
+                .ToListAsync();
+
+            if (funcionarios == null || funcionarios.Count == 0)
+                return NotFound("Nenhum funcionário encontrado.");
+
+            // Simplificando a resposta para evitar dados desnecessários e tornar mais organizada
+            var result = funcionarios.Select(f => new
+            {
+                f.UsuarioFuncionario,
+                f.Nome,
+                f.NomePatio,
+                Patio = new
+                {
+                    f.Patio.NomePatio,
+                    f.Patio.Localizacao
+                }
+            }).ToList();
+
+            return Ok(result);
         }
 
         // GET: api/funcionarios/{usuarioFuncionario}
@@ -37,18 +57,31 @@ namespace MottuApi.Controllers
             if (funcionario == null)
                 return NotFound("Funcionário não encontrado.");
 
-            return Ok(funcionario);
+            var result = new
+            {
+                funcionario.UsuarioFuncionario,
+                funcionario.Nome,
+                funcionario.NomePatio,
+                Patio = new
+                {
+                    funcionario.Patio.NomePatio,
+                    funcionario.Patio.Localizacao
+                }
+            };
+
+            return Ok(result);
         }
 
         // POST: api/funcionarios
         [HttpPost]
         public async Task<ActionResult<Funcionario>> PostFuncionario(FuncionarioDTO funcionarioDTO)
         {
+            // Verificar se o pátio existe no banco de dados
             var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == funcionarioDTO.NomePatio);
-
             if (patio == null)
                 return BadRequest("Pátio não encontrado.");
 
+            // Criar o funcionário
             var funcionario = new Funcionario
             {
                 UsuarioFuncionario = funcionarioDTO.UsuarioFuncionario,
@@ -60,6 +93,7 @@ namespace MottuApi.Controllers
             _context.Funcionarios.Add(funcionario);
             await _context.SaveChangesAsync();
 
+            // Retorna a resposta com o funcionário criado
             return CreatedAtAction(nameof(GetFuncionarioByUsuario), new { usuarioFuncionario = funcionario.UsuarioFuncionario }, funcionario);
         }
 

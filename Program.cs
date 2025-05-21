@@ -1,15 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
+using MottuApi.Models;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configuração do DbContext
 builder.Services.AddDbContext<MottuDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")));
 
-builder.Services.AddControllers();
+// Configuração dos controllers
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        // Configuração para preservar referências e evitar erros de ciclo
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+    });
 
-builder.Services.AddEndpointsApiExplorer();
+// Configuração do Swagger para documentação da API
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -18,12 +26,11 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "API para gestão de motos, funcionários, pátios e clientes."
     });
-
-    options.TagActionsBy(api => [api.ActionDescriptor.RouteValues["controller"]]);
 });
 
 var app = builder.Build();
 
+// Configuração do Swagger UI para visualização e testes
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
