@@ -26,4 +26,3 @@ EXPOSE 80
 
 # Comando de execução da aplicação
 ENTRYPOINT ["dotnet", "MottuApi.net.dll"]
-

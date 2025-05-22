@@ -28,6 +28,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+// Aqui configuramos o Kestrel diretamente para escutar na porta 80
+builder.WebHost.UseUrls("http://0.0.0.0:80");  // Aplique isso para escutar na porta 80 de todas as interfaces
+
 var app = builder.Build();
 
 // Configuração do Swagger UI para visualização e testes
