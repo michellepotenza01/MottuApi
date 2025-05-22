@@ -1,28 +1,31 @@
-﻿# Etapa de construção com a imagem SDK do .NET
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
-WORKDIR /app
+﻿# Use a imagem oficial do SDK para build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 
-# Copiar os arquivos do projeto para o container
+WORKDIR /src
+
+# Copia o .csproj e restaura as dependências
+COPY *.csproj ./
+RUN dotnet restore
+
+# Copia o restante do código e publica a aplicação
 COPY . ./
+RUN dotnet publish -c Release -o /app/publish
 
-# Restaurar as dependências da aplicação
-RUN dotnet restore "MottuApi.net.csproj"
+# Imagem de runtime
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS final
 
-# Compilar o projeto
-RUN dotnet build "MottuApi.net.csproj" -c Release -o /app/build
-
-# Publicar a aplicação
-RUN dotnet publish "MottuApi.net.csproj" -c Release -o /app/publish
-
-# Etapa final: usar a imagem ASP.NET Core para rodar a aplicação
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
-
-# Copiar os arquivos compilados da etapa anterior
 COPY --from=build /app/publish .
 
-# Expor a porta 80 para acesso externo
-EXPOSE 80
+# Define a porta exposta
+EXPOSE 7205
 
-# Comando de execução da aplicação
-ENTRYPOINT ["dotnet", "MottuApi.net.dll"]
+# Configura o ASP.NET para escutar na porta 7205
+ENV ASPNETCORE_URLS=http://+:7205
+
+# Permite rodar com um usuário não root (opcional)
+RUN adduser --disabled-password --gecos '' myuser
+USER myuser
+
+# Comando de entrada
+ENTRYPOINT ["dotnet", "MottuApi.dll"]
