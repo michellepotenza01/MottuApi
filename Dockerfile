@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 ﻿# Use a imagem oficial do SDK para build
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+=======
+# Etapa de construção com a imagem SDK do .NET
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /app
+>>>>>>> 62f9b743ffb9732fdc1a0ab84ee219aab1dbd018
 
 WORKDIR /src
 
