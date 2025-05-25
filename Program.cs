@@ -29,20 +29,15 @@ builder.Services.AddSwaggerGen(options =>
     options.TagActionsBy(api => new[] { api.ActionDescriptor.RouteValues["controller"] });
 });
 
-
-
 var app = builder.Build();
 
-// Configuração do Swagger UI
-if (app.Environment.IsDevelopment())
+// Habilita o Swagger e SwaggerUI em qualquer ambiente
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Mottu API v1");
-        c.RoutePrefix = string.Empty; // Swagger acessível em "/"
-    });
-}
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Mottu API v1");
+    c.RoutePrefix = string.Empty; // Swagger acessível em "/"
+});
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
