@@ -12,6 +12,9 @@ namespace MottuApi.Controllers
     [ApiController]
     public class MotoController : ControllerBase
     {
+    private const string Disponivel = "Disponível";
+    private const string Alugada = "Alugada";
+    private const string Manutencao = "Manutenção";
         private readonly MottuDbContext _context;
 
         public MotoController(MottuDbContext context)
@@ -24,14 +27,13 @@ namespace MottuApi.Controllers
         public async Task<ActionResult<IEnumerable<Moto>>> GetMotos()
         {
             var motos = await _context.Motos
-                .Include(m => m.Patio)  // Inclui o pátio
-                .Include(m => m.Funcionario) // Inclui o funcionário
+                .Include(m => m.Patio)  
+                .Include(m => m.Funcionario) 
                 .ToListAsync();
 
             if (motos == null || motos.Count == 0)
                 return NotFound("Nenhuma moto encontrada.");
 
-            // Simplificar o retorno para incluir apenas as informações necessárias
             var result = motos.Select(m => new
             {
                 m.Placa,
@@ -57,7 +59,6 @@ namespace MottuApi.Controllers
             if (moto == null)
                 return NotFound("Moto não encontrada.");
 
-            // Simplificar o retorno para incluir apenas as informações necessárias
             var result = new
             {
                 moto.Placa,
@@ -73,28 +74,27 @@ namespace MottuApi.Controllers
 
         // POST: api/motos
         [HttpPost]
-        public async Task<ActionResult<Moto>> PostMoto([FromBody] MotoDTO motoDTO)
+        public async Task<ActionResult<Moto>> PostMoto([FromBody] MotoDto motoDto)
         {
             // Validações de modelo, status e setor
-            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDTO.Modelo))
+            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDto.Modelo))
                 return BadRequest("Modelo inválido. Os modelos válidos são: MottuSport, MottuE, MottuPop.");
 
-            if (!new[] { "Disponível", "Alugada", "Manutenção" }.Contains(motoDTO.Status))
-                return BadRequest("Status inválido. Os valores válidos são: 'Disponível', 'Alugada', ou 'Manutenção'.");
+            if (!new[] { Disponivel, Alugada, Manutencao }.Contains(motoDto.Status))
+                return BadRequest($"Status inválido. Os valores válidos são: '{Disponivel}', '{Alugada}', ou '{Manutencao}'.");
 
-            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDTO.Setor))
+
+            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDto.Setor))
                 return BadRequest("Setor inválido. Os valores válidos são: 'Bom', 'Intermediário', ou 'Ruim'.");
 
-            // Verificar se o funcionário existe
             var funcionario = await _context.Funcionarios
-                .FirstOrDefaultAsync(f => f.UsuarioFuncionario == motoDTO.UsuarioFuncionario);
+                .FirstOrDefaultAsync(f => f.UsuarioFuncionario == motoDto.UsuarioFuncionario);
 
             if (funcionario == null)
                 return BadRequest("Funcionário não encontrado.");
 
-            // Verificar se o pátio existe
             var patio = await _context.Patios
-                .FirstOrDefaultAsync(p => p.NomePatio == motoDTO.NomePatio);
+                .FirstOrDefaultAsync(p => p.NomePatio == motoDto.NomePatio);
 
             if (patio == null)
                 return BadRequest("Pátio não encontrado.");
@@ -104,18 +104,19 @@ namespace MottuApi.Controllers
 
             var moto = new Moto
             {
-                Placa = motoDTO.Placa,
-                Modelo = motoDTO.Modelo,
-                Status = motoDTO.Status,
-                Setor = motoDTO.Setor,
-                NomePatio = motoDTO.NomePatio,
-                UsuarioFuncionario = motoDTO.UsuarioFuncionario,
+                Placa = motoDto.Placa,
+                Modelo = motoDto.Modelo,
+                Status = motoDto.Status,
+                Setor = motoDto.Setor,
+                NomePatio = motoDto.NomePatio,
+                UsuarioFuncionario = motoDto.UsuarioFuncionario,
                 Funcionario = funcionario,
                 Patio = patio
             };
 
-            if (moto.Status == "Disponível" || moto.Status == "Manutenção")
+            if (moto.Status == Disponivel || moto.Status == Manutencao)
                 patio.VagasOcupadas++;
+
 
             _context.Motos.Add(moto);
             await _context.SaveChangesAsync();
@@ -125,16 +126,16 @@ namespace MottuApi.Controllers
 
         // PUT: api/motos/{placa}
         [HttpPut("{placa}")]
-        public async Task<IActionResult> PutMoto(string placa, [FromBody] MotoDTO motoDTO)
+        public async Task<IActionResult> PutMoto(string placa, [FromBody] MotoDto motoDto)
         {
             // Validações de modelo, status e setor
-            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDTO.Modelo))
+            if (!new[] { "MottuSport", "MottuE", "MottuPop" }.Contains(motoDto.Modelo))
                 return BadRequest("Modelo inválido. Os modelos válidos são: MottuSport, MottuE, MottuPop.");
 
-            if (!new[] { "Disponível", "Alugada", "Manutenção" }.Contains(motoDTO.Status))
-                return BadRequest("Status inválido. Os valores válidos são: 'Disponível', 'Alugada', ou 'Manutenção'.");
+            if (!new[] { Disponivel, Alugada, Manutencao }.Contains(motoDto.Status))
+                return BadRequest($"Status inválido. Os valores válidos são: '{Disponivel}', '{Alugada}', ou '{Manutencao}'.");
 
-            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDTO.Setor))
+            if (!new[] { "Bom", "Intermediário", "Ruim" }.Contains(motoDto.Setor))
                 return BadRequest("Setor inválido. Os valores válidos são: 'Bom', 'Intermediário', ou 'Ruim'.");
 
             var motoExistente = await _context.Motos
@@ -146,23 +147,18 @@ namespace MottuApi.Controllers
 
             var patio = motoExistente.Patio;
 
-            if (motoDTO.Status != motoExistente.Status)
-            {
-                if (motoDTO.Status == "Alugada")
+            if (motoDto.Status != motoExistente.Status)
+            { if ((motoDto.Status == Alugada && motoExistente.Status == Disponivel) ||
+            ((motoDto.Status == Disponivel || motoDto.Status == Manutencao) && motoExistente.Status == Alugada))
                 {
-                    if (motoExistente.Status == "Disponível")
-                        patio.VagasOcupadas--;
-                }
-                else if (motoDTO.Status == "Disponível" || motoDTO.Status == "Manutenção")
-                {
-                    if (motoExistente.Status == "Alugada")
-                        patio.VagasOcupadas++;
+                    patio.VagasOcupadas += (motoDto.Status == Alugada) ? -1 : 1;
                 }
             }
+    
 
-            motoExistente.Modelo = motoDTO.Modelo;
-            motoExistente.Status = motoDTO.Status;
-            motoExistente.Setor = motoDTO.Setor;
+            motoExistente.Modelo = motoDto.Modelo;
+            motoExistente.Status = motoDto.Status;
+            motoExistente.Setor = motoDto.Setor;
 
             await _context.SaveChangesAsync();
 
@@ -181,7 +177,7 @@ namespace MottuApi.Controllers
                 return NotFound("Moto não encontrada.");
 
             var patio = moto.Patio;
-            if (patio != null && (moto.Status == "Disponível" || moto.Status == "Manutenção"))
+            if (patio != null && (moto.Status == Disponivel || moto.Status == Manutencao))
             {
                 patio.VagasOcupadas--;
             }

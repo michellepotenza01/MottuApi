@@ -2,7 +2,7 @@
 
 namespace MottuApi.Models
 {
-    public class PatioDTO
+    public class PatioDto
     {
         [Required(ErrorMessage = "O nome do pátio é obrigatório.")]
         [StringLength(450)]  // Garantir que o nome do pátio tenha o mesmo comprimento no banco

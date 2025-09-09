@@ -44,17 +44,17 @@ namespace MottuApi.Controllers
 
         // POST: api/patios
         [HttpPost]
-        public async Task<ActionResult<Patio>> PostPatio(PatioDTO patioDTO)
+        public async Task<ActionResult<Patio>> PostPatio(PatioDto patioDto)
         {
-            if (patioDTO.VagasOcupadas > patioDTO.VagasTotais)
+            if (patioDto.VagasOcupadas > patioDto.VagasTotais)
                 return BadRequest("O número de vagas ocupadas não pode ser maior que o número total de vagas.");
 
             var patio = new Patio
             {
-                NomePatio = patioDTO.NomePatio,
-                Localizacao = patioDTO.Localizacao,
-                VagasTotais = patioDTO.VagasTotais,
-                VagasOcupadas = patioDTO.VagasOcupadas
+                NomePatio = patioDto.NomePatio,
+                Localizacao = patioDto.Localizacao,
+                VagasTotais = patioDto.VagasTotais,
+                VagasOcupadas = patioDto.VagasOcupadas
             };
 
             _context.Patios.Add(patio);
@@ -65,9 +65,9 @@ namespace MottuApi.Controllers
 
         // PUT: api/patios/{nomePatio}
         [HttpPut("{nomePatio}")]
-        public async Task<IActionResult> PutPatio(string nomePatio, PatioDTO patioDTO)
+        public async Task<IActionResult> PutPatio(string nomePatio, PatioDto patioDto)
         {
-            if (nomePatio != patioDTO.NomePatio)
+            if (nomePatio != patioDto.NomePatio)
                 return BadRequest("O nome do pátio não corresponde ao parâmetro.");
 
             var patioExistente = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == nomePatio);
@@ -75,13 +75,13 @@ namespace MottuApi.Controllers
             if (patioExistente == null)
                 return NotFound("Pátio não encontrado.");
 
-            patioExistente.Localizacao = patioDTO.Localizacao;
-            patioExistente.VagasTotais = patioDTO.VagasTotais;
+            patioExistente.Localizacao = patioDto.Localizacao;
+            patioExistente.VagasTotais = patioDto.VagasTotais;
 
-            if (patioDTO.VagasOcupadas > patioExistente.VagasTotais)
+            if (patioDto.VagasOcupadas > patioExistente.VagasTotais)
                 return BadRequest("O número de vagas ocupadas não pode ser maior que o número total de vagas.");
 
-            patioExistente.VagasOcupadas = patioDTO.VagasOcupadas;
+            patioExistente.VagasOcupadas = patioDto.VagasOcupadas;
 
             await _context.SaveChangesAsync();
 

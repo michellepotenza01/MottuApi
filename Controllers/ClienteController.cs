@@ -43,7 +43,7 @@ namespace MottuApi.Controllers
 
         // POST: api/clientes
         [HttpPost]
-        public async Task<ActionResult<Cliente>> PostCliente(ClienteDTO clienteDTO)
+        public async Task<ActionResult<Cliente>> PostCliente(ClienteDto clienteDTO)
         {
             var cliente = new Cliente
             {
@@ -61,7 +61,7 @@ namespace MottuApi.Controllers
 
         // PUT: api/clientes/{usuarioCliente}
         [HttpPut("{usuarioCliente}")]
-        public async Task<IActionResult> PutCliente(string usuarioCliente, ClienteDTO clienteDTO)
+        public async Task<IActionResult> PutCliente(string usuarioCliente, ClienteDto clienteDTO)
         {
             if (usuarioCliente != clienteDTO.UsuarioCliente)
                 return BadRequest("O usuário do cliente não corresponde ao parâmetro.");

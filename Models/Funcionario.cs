@@ -30,6 +30,7 @@ namespace MottuApi.Models
             Nome = string.Empty;
             Senha = string.Empty;
             NomePatio = string.Empty;
+            Patio = new Patio();
         }
     }
 }

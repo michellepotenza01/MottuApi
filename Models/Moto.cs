@@ -36,5 +36,6 @@ public class Moto
         Placa = string.Empty;
         NomePatio = string.Empty;
         UsuarioFuncionario = string.Empty;
+        
     }
 }

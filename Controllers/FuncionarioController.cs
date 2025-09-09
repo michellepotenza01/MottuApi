@@ -74,34 +74,33 @@ namespace MottuApi.Controllers
 
         // POST: api/funcionarios
         [HttpPost]
-        public async Task<ActionResult<Funcionario>> PostFuncionario(FuncionarioDTO funcionarioDTO)
+        public async Task<ActionResult<Funcionario>> PostFuncionario(FuncionarioDto funcionarioDto)
         {
             // Verificar se o pátio existe no banco de dados
-            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == funcionarioDTO.NomePatio);
+            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == funcionarioDto.NomePatio);
             if (patio == null)
                 return BadRequest("Pátio não encontrado.");
 
             // Criar o funcionário
             var funcionario = new Funcionario
             {
-                UsuarioFuncionario = funcionarioDTO.UsuarioFuncionario,
-                Nome = funcionarioDTO.Nome,
-                Senha = funcionarioDTO.Senha,
+                UsuarioFuncionario = funcionarioDto.UsuarioFuncionario,
+                Nome = funcionarioDto.Nome,
+                Senha = funcionarioDto.Senha,
                 Patio = patio
             };
 
             _context.Funcionarios.Add(funcionario);
             await _context.SaveChangesAsync();
 
-            // Retorna a resposta com o funcionário criado
             return CreatedAtAction(nameof(GetFuncionarioByUsuario), new { usuarioFuncionario = funcionario.UsuarioFuncionario }, funcionario);
         }
 
         // PUT: api/funcionarios/{usuarioFuncionario}
         [HttpPut("{usuarioFuncionario}")]
-        public async Task<IActionResult> PutFuncionario(string usuarioFuncionario, FuncionarioDTO funcionarioDTO)
+        public async Task<IActionResult> PutFuncionario(string usuarioFuncionario, FuncionarioDto funcionarioDto)
         {
-            if (usuarioFuncionario != funcionarioDTO.UsuarioFuncionario)
+            if (usuarioFuncionario != funcionarioDto.UsuarioFuncionario)
                 return BadRequest("O usuário do funcionário não corresponde ao parâmetro.");
 
             var funcionarioExistente = await _context.Funcionarios.Include(f => f.Patio)
@@ -110,12 +109,12 @@ namespace MottuApi.Controllers
             if (funcionarioExistente == null)
                 return NotFound("Funcionário não encontrado.");
 
-            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == funcionarioDTO.NomePatio);
+            var patio = await _context.Patios.FirstOrDefaultAsync(p => p.NomePatio == funcionarioDto.NomePatio);
             if (patio == null)
                 return BadRequest("Pátio não encontrado.");
 
-            funcionarioExistente.Nome = funcionarioDTO.Nome;
-            funcionarioExistente.Senha = funcionarioDTO.Senha;
+            funcionarioExistente.Nome = funcionarioDto.Nome;
+            funcionarioExistente.Senha = funcionarioDto.Senha;
             funcionarioExistente.Patio = patio;
 
             await _context.SaveChangesAsync();
