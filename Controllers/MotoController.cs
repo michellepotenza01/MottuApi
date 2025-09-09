@@ -128,15 +128,15 @@ namespace MottuApi.Controllers
 
 
 
-private void AlterarVagas(string novoStatus, string statusExistente, Patio patio)
+private static void AlterarVagas(string novoStatus, string statusExistente, Patio patio)
 {
     if (novoStatus == Alugada && statusExistente == Disponivel)
     {
-        patio.VagasOcupadas--; 
+        patio.VagasOcupadas--;  
     }
     else if ((novoStatus == Disponivel || novoStatus == Manutencao) && statusExistente == Alugada)
     {
-        patio.VagasOcupadas++; 
+        patio.VagasOcupadas++;  
     }
 }
 
@@ -164,10 +164,10 @@ private void AlterarVagas(string novoStatus, string statusExistente, Patio patio
 
             var patio = motoExistente.Patio;
 
-        if (motoDto.Status != motoExistente.Status)
-        {
-            AlterarVagas(motoDto.Status, motoExistente.Status, patio); 
-        }
+            if (motoDto.Status != motoExistente.Status)
+            {
+                AlterarVagas(motoDto.Status, motoExistente.Status, patio);
+            }
 
 
             motoExistente.Modelo = motoDto.Modelo;
