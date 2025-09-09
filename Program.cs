@@ -4,9 +4,30 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuração do DbContext
+// Recupera a senha do banco de dados da variável de ambiente
+var dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
+
+// Verifica se a variável de ambiente está definida
+if (string.IsNullOrEmpty(dbPassword))
+{
+    throw new InvalidOperationException("A variável de ambiente 'DB_PASSWORD' não foi definida.");
+}
+
+// Obtém a string de conexão do arquivo de configuração
+var connectionString = builder.Configuration.GetConnectionString("OracleConnection");
+
+// Verifica se a string de conexão foi encontrada no arquivo de configuração
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("A string de conexão 'OracleConnection' não foi encontrada.");
+}
+
+// Substitui a variável de ambiente na string de conexão
+connectionString = connectionString.Replace("${DB_PASSWORD}", dbPassword);
+
+// Configura o DbContext com a string de conexão
 builder.Services.AddDbContext<MottuDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")));
+    options.UseOracle(connectionString));
 
 // Configuração dos controllers
 builder.Services.AddControllers()
@@ -42,4 +63,4 @@ app.UseSwaggerUI(c =>
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-app.Run();
+await app.RunAsync();

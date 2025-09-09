@@ -8,6 +8,10 @@ namespace MottuApi.Services
 {
     public class MotoService
     {
+        private const string Disponivel = "Disponível";
+        private const string Alugada = "Alugada";
+        private const string Manutencao = "Manutenção";
+
         private readonly MottuDbContext _context;
 
         public MotoService(MottuDbContext context)
@@ -36,14 +40,12 @@ namespace MottuApi.Services
 
         public async Task<string> AddMotoAsync(Moto moto)
         {
-            // Verificar se o funcionário existe
             var funcionario = await _context.Funcionarios
                 .FirstOrDefaultAsync(f => f.UsuarioFuncionario == moto.UsuarioFuncionario);
 
             if (funcionario == null)
                 return "Funcionário não encontrado.";
 
-            // Verificar se o pátio existe
             var patio = await _context.Patios
                 .FirstOrDefaultAsync(p => p.NomePatio == moto.NomePatio);
 
@@ -55,8 +57,7 @@ namespace MottuApi.Services
 
             _context.Motos.Add(moto);
 
-            // Se a moto for "disponível" ou "em manutenção", ocupa uma vaga
-            if (moto.Status == "Disponível" || moto.Status == "Manutenção")
+            if (moto.Status == Disponivel || moto.Status == Manutencao)
                 patio.VagasOcupadas++;
 
             await _context.SaveChangesAsync();
@@ -76,16 +77,14 @@ namespace MottuApi.Services
 
             if (moto.Status != motoExistente.Status)
             {
-                // Libera ou ocupa vaga dependendo do status
-                if (moto.Status == "Alugada")
+                // Merge: Merging both if statements into one
+                if (moto.Status == Alugada && motoExistente.Status == Disponivel)
                 {
-                    if (motoExistente.Status == "Disponível")
-                        patio.VagasOcupadas--;
+                    patio.VagasOcupadas--;
                 }
-                else if (moto.Status == "Disponível" || moto.Status == "Manutenção")
+                else if ((moto.Status == Disponivel || moto.Status == Manutencao) && motoExistente.Status == Alugada)
                 {
-                    if (motoExistente.Status == "Alugada")
-                        patio.VagasOcupadas++;
+                    patio.VagasOcupadas++;
                 }
             }
 
@@ -108,7 +107,7 @@ namespace MottuApi.Services
 
             var patio = moto.Patio;
 
-            if (patio != null && (moto.Status == "Disponível" || moto.Status == "Manutenção"))
+            if (patio != null && (moto.Status == Disponivel || moto.Status == Manutencao))
                 patio.VagasOcupadas--;
 
             _context.Motos.Remove(moto);

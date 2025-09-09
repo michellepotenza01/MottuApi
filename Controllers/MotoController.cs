@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MottuApi.Data;
+using MottuApi.DTOs;
 using MottuApi.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -124,6 +125,22 @@ namespace MottuApi.Controllers
             return CreatedAtAction(nameof(GetMoto), new { placa = moto.Placa }, moto);
         }
 
+
+
+
+private void AlterarVagas(string novoStatus, string statusExistente, Patio patio)
+{
+    if (novoStatus == Alugada && statusExistente == Disponivel)
+    {
+        patio.VagasOcupadas--; 
+    }
+    else if ((novoStatus == Disponivel || novoStatus == Manutencao) && statusExistente == Alugada)
+    {
+        patio.VagasOcupadas++; 
+    }
+}
+
+
         // PUT: api/motos/{placa}
         [HttpPut("{placa}")]
         public async Task<IActionResult> PutMoto(string placa, [FromBody] MotoDto motoDto)
@@ -147,14 +164,11 @@ namespace MottuApi.Controllers
 
             var patio = motoExistente.Patio;
 
-            if (motoDto.Status != motoExistente.Status)
-            { if ((motoDto.Status == Alugada && motoExistente.Status == Disponivel) ||
-            ((motoDto.Status == Disponivel || motoDto.Status == Manutencao) && motoExistente.Status == Alugada))
-                {
-                    patio.VagasOcupadas += (motoDto.Status == Alugada) ? -1 : 1;
-                }
-            }
-    
+        if (motoDto.Status != motoExistente.Status)
+        {
+            AlterarVagas(motoDto.Status, motoExistente.Status, patio); 
+        }
+
 
             motoExistente.Modelo = motoDto.Modelo;
             motoExistente.Status = motoDto.Status;
